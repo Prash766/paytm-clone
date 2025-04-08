@@ -1,15 +1,35 @@
 import { prisma } from '@repo/db/client'
-import NextAuth from 'next-auth'
 import bcrypt from 'bcrypt'
 import CredentialsProvider from "next-auth/providers/credentials"
+import { DefaultSession, NextAuthOptions } from "next-auth";
 
+declare module "next-auth" {
+    interface User {
+      id?: string;
+      phoneNumber?: string;
+    }
+    interface Session {
+      user: DefaultSession["user"] & {
+        id?: string;
+        phoneNumber?: string;
+      };
+    }
+  }
+  declare module "next-auth/jwt" {
+    interface JWT {
+      id?: string;
+      phoneNumber?: string;
+    }
+  }
+  
+  
 
 export const authOptions = {
     providers: [
         CredentialsProvider({
             name: "Sign In",
             credentials: {
-                phoneNumber: { label: "Phone Number", type: "number", placeholder: "Enter your Phone Number" },
+                phoneNumber: { label: "Phone Number", type: "text", placeholder: "Enter your Phone Number" },
                 password: { label: "Password", type: "password", placeholder: "Enter your password" }
             },
             async authorize(credentials) {
@@ -17,7 +37,6 @@ export const authOptions = {
                     if (!credentials?.password) {
                         return null;
                     }
-                    const hashedPassword = await bcrypt.hash(credentials.password , 10)
                     const user = await prisma.user.findFirst({
                         where: {
                             number: credentials?.phoneNumber
@@ -42,6 +61,7 @@ export const authOptions = {
                             phoneNumber: user.number
                         }
                     }
+                    return null
                 } catch (error) {
                     console.log(error)
                     return null
@@ -50,5 +70,28 @@ export const authOptions = {
         })
         
     ],
-    secret:process.env.NEXTAUTH_URL
-}
+    callbacks:{
+        async jwt({token, user }){
+            console.log(user)
+            if(user){
+                token.phoneNumber = user.phoneNumber
+                token.id = user.id
+            }
+            console.log("TOKEN IN JWT CALLBACK", token)
+            return token
+        },
+        async session({session , token}){
+            console.log("token",token)
+            if(token){
+                session.user.phoneNumber = token.phoneNumber
+                session.user.id = token.id
+            }
+            console.log("SESSION",session)
+            return session
+        }
+
+    },
+    secret:process.env.NEXTAUTH_SECRET,
+    
+    
+} satisfies NextAuthOptions

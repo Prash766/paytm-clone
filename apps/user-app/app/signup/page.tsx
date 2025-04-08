@@ -13,6 +13,9 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { userSignUpSchema } from "../../schemas/signup.schema";
+import FormButton from "../../components/Button";
+import { signup } from "../../actions/signUpAction";
+import { signIn } from "next-auth/react";
 
 export default function SignUp() {
   const form = useForm<z.infer<typeof userSignUpSchema>>({
@@ -22,15 +25,25 @@ export default function SignUp() {
       name: "",
       number: "",
       password: "",
-    },
+    }, 
   });
 
-  function onSubmit(){
-    
+ async function onSubmit(){
+    console.log("hi ther ")
+    const res = await signup(form.getValues())
+    if(res.success===true){
+        await signIn("credentials",{
+           email: form.getValues().email,
+           password : form.getValues().password,
+           redirect:true,
+           callbackUrl:"/"
+        })
+    }
+    console.log("res",res)
   }
 
   return (
-    <div className="">
+    <div className="container mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
 
@@ -66,7 +79,7 @@ export default function SignUp() {
         control={form.control}
         render={({field})=>(
           <FormItem>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>Password</FormLabel>
             <FormControl>
               <Input type="password" placeholder="Enter your password" {...field}/>
             </FormControl>
@@ -74,6 +87,20 @@ export default function SignUp() {
           </FormItem>
         )}
         />
+          <FormField
+        name="number"
+        control={form.control}
+        render={({field})=>(
+          <FormItem>
+            <FormLabel>Phone Number</FormLabel>
+            <FormControl>
+              <Input type="text" placeholder="+91 982321****" {...field}/>
+            </FormControl>
+            <FormMessage/>
+          </FormItem>
+        )}
+        />
+        <FormButton type="submit" className="mt-2 bg-red-400 w-28 rounded-xl">Save</FormButton>
         </form>
       </Form>
     </div>
