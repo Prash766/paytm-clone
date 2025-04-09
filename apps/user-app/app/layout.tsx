@@ -5,6 +5,7 @@ import StoreProvider from "../providers/StoreProvider";
 import AuthProvider from "../providers/AuthProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../lib/auth";
+import AppBar from "../components/AppBar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,6 +33,7 @@ export default async function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider session={session!}>
           <StoreProvider>
+          <AppBar/>
             {children}
           </StoreProvider>
         </AuthProvider>
