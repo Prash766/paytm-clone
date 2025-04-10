@@ -43,7 +43,7 @@ export default function SignUp() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="w-32">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
 
