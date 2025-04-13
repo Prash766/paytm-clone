@@ -57,7 +57,7 @@ const ProfileCard = ({
   const { src, fallback, alt } = getProfileAvatar(profileType, profilePic, initialName)
 
   return (
-    <div className={`flex items-center p-4 ${className} ${bg_color}` }>
+    <div className={`flex items-center p-4 mt-2 ${className} ${bg_color}` }>
       <div className="flex items-center gap-3">
         <Avatar className={`h-10 w-10 ${profileType==="initials" ? "bg-black text-white" : ""} `}>
           {src && <AvatarImage src={src} alt={alt || initialName} />}

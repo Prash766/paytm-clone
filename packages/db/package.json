@@ -4,6 +4,9 @@
   "exports":{
     "./client" : "./src/index.ts"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^6.5.0"
   }

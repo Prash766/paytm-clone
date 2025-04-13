@@ -38,3 +38,8 @@ app.post("/hdfcWebhook", async (req, res) => {
     console.log(error)
   }
 });
+
+
+app.listen(4002, ()=>{
+  console.log("Server is running ")
+})

@@ -1,4 +1,4 @@
-import { LucideIcon} from 'lucide-react'
+import { LucideIcon, Repeat} from 'lucide-react'
 
 const ICONS_SVG = {
     grid : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -35,19 +35,19 @@ const ICONS_SVG = {
 }
 
 export const SIDEBAR_ITEMS : SIDEBAR_ITEMS_TYPE[]= [
-    { name: "Dashboard", icon: ICONS_SVG.home },
-    { name: "Accounts", icon: ICONS_SVG.grid },
-    { name: "Cards", icon: ICONS_SVG.credit_card},
-    { name: "Transaction", icon: ICONS_SVG.dollar_sign },
-    { name: "Spend Groups", icon: ICONS_SVG.layers },
-    { name: "Integrations", icon: ICONS_SVG.users },
-    { name: "Payees", icon: ICONS_SVG.users },
-    { name: "Invoices", icon: ICONS_SVG.file_text }
+    { name: "Dashboard", icon: ICONS_SVG.home , key:1 },
+    { name: "Accounts", icon: ICONS_SVG.grid, key:2},
+    { name: "Cards", icon: ICONS_SVG.credit_card, key:3},
+    { name: "Transfer", icon: ICONS_SVG.repeat, key:4},
+    { name: "Transaction", icon: ICONS_SVG.dollar_sign, key:5 },
+    { name: "Spend Groups", icon: ICONS_SVG.layers, key:6 },
+    { name: "Payees", icon: ICONS_SVG.users, key:7 },
   ]
 
 
 export interface SIDEBAR_ITEMS_TYPE {
     name:string,
+    key: number, 
     icon:LucideIcon | string
 }
 

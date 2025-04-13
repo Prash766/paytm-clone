@@ -24,13 +24,23 @@
 
 import { useSession } from "next-auth/react"
 import ProfileCard from "./ProfileCard"
-import { SIDEBAR_ITEMS } from "../helper/constants"
+import { SIDEBAR_ITEMS, SIDEBAR_ITEMS_TYPE } from "../helper/constants"
 import SideBarItems from "./SideBarItems"
 import { SearchIcon } from "lucide-react"
 import { Separator } from "@repo/ui/ui"
+import { useState } from "react"
 
 const SideBar = ({ className }: { className?: string }) => {
   const session = useSession()
+  const [isFocused , setIsFocused] = useState(false)
+  const [activeSidebarItem  , setActiveSidebarItem] = useState<number>(1)
+
+  const handleClick = (item: SIDEBAR_ITEMS_TYPE) => {
+    if (activeSidebarItem !== item.key) {
+      setActiveSidebarItem(item.key);
+    }
+  }
+
   
   return (
     <div className={` font-text flex flex-col h-full bg-gray-100 ${className}`}>
@@ -57,7 +67,7 @@ const SideBar = ({ className }: { className?: string }) => {
       
       <nav className="mt-2 flex flex-col">
         {SIDEBAR_ITEMS.map((item , index) => (
-            <SideBarItems key={index} item={item}/>
+            <SideBarItems activeSidebarItem={activeSidebarItem} setActiveSidebarItem={(item:SIDEBAR_ITEMS_TYPE)=>handleClick(item)}  key={index} item={item}/>
         ))}
       </nav>
     </div>
