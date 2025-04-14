@@ -4,6 +4,10 @@
   "exports":{
     "./client" : "./src/index.ts"
   },
+  "scripts": {
+    "prisma-bank-migrate":"npx prisma migrate dev --schema ./prisma-bank-db/schema.prisma",
+    "prisma-client-migrate" : "npx prisma migrate dev --schema ./prisma-client-db/schema.prisma"
+  },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },

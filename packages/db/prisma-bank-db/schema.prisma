@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output = "../prisma-bank-db/bank-db"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PG_BANK_DATABASE_URL")
+  directUrl = env("PG_BANK_DIRECT_URL")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  phoneNumber Int @unique
+  password String 
+  Account Account[]
+  senderTransactions Transactions[] @relation("SenderTransactions")
+  receiverTransactions Transactions[] @relation("ReceiverTransactions")
+}
+
+model Account {
+  id Int @id @default(autoincrement())
+  accountNumber Int @unique
+  securityKey String
+  userId Int @unique
+  balance Int 
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Transactions{
+  id Int @id @default(autoincrement())
+  senderId Int
+  receiverId Int
+  token String @unique
+  transactionId String @unique
+  status TransactionStatus
+  sender User @relation("SenderTransactions", fields: [senderId], references: [id])
+  receiver User @relation("ReceiverTransactions", fields: [receiverId], references: [id])
+  @@unique([id , senderId, receiverId])
+}
+
+
+enum TransactionStatus {
+  Success
+  Processing
+  Failure
+}

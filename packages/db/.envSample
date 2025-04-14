@@ -1,1 +1,6 @@
-DATABASE_URL = postgresql://neondb_owner:npg_rzExysLDq76j@ep-steep-dust-a5ftvmab-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
+PG_CLIENT_DATABASE_URL = postgresql://neondb_owner:npg_rzExysLDq76j@ep-steep-dust-a5ftvmab-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
+PG_CLIENT_DIRECT_URL = postgresql://neondb_owner:npg_rzExysLDq76j@ep-steep-dust-a5ftvmab.us-east-2.aws.neon.tech/neondb?sslmode=require
+
+
+PG_BANK_DATABASE_URL = postgresql://neondb_owner:npg_Ks3qvNwr2OAJ@ep-black-dew-a425wj0b-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
+PG_BANK_DIRECT_URL= postgresql://neondb_owner:npg_Ks3qvNwr2OAJ@ep-black-dew-a425wj0b.us-east-1.aws.neon.tech/neondb?sslmode=require
