@@ -1,9 +1,8 @@
-"use client";
 
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@repo/ui/ui";
 import BalanceAmount from "../BalanceAmount";
 import AddMoneyForm from "../AddMoneyForm";
-import TransactionHistory from "../TransactionHistory";
+import TransactionHistoryPage from "../TransactionHistoryPage";
 
 const TransferOnRamping = () => {
   return (
@@ -46,7 +45,7 @@ const TransferOnRamping = () => {
       </div>
       <div className="grid grid-cols-1">
       </div>
-        <TransactionHistory/>
+        <TransactionHistoryPage/>
     </div>
   );
 };
