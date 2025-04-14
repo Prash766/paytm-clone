@@ -31,6 +31,7 @@ return  data.startTime.toLocaleDateString()
       const plainTransactions = transactions.map(transaction =>
       JSON.parse(JSON.stringify(transaction))
     )
+    console.log("plain transactions",plainTransactions)
   
     return {
       success: true,

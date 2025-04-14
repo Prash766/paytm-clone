@@ -1,4 +1,3 @@
-"use server"
 import getTransactionHistory from "../actions/transactionHistory"
 import TransactionHistory from "./TransactionHistory"
 
@@ -9,7 +8,8 @@ const TransactionHistoryPage = async() => {
 
   return (
     
-         <TransactionHistory initialTransactions= {transactions}/> 
+        //  <TransactionHistory initialTransactions= {transactions}/> 
+         <TransactionHistory /> 
     
   )
 }
