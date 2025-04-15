@@ -19,7 +19,7 @@ model User {
   id Int @id @default(autoincrement())
   name String
   email String @unique
-  phoneNumber Int @unique
+  phoneNumber BigInt @unique
   password String 
   Account Account[]
   senderTransactions Transactions[] @relation("SenderTransactions")
@@ -28,10 +28,10 @@ model User {
 
 model Account {
   id Int @id @default(autoincrement())
-  accountNumber Int @unique
+  accountNumber BigInt @unique
   securityKey String
   userId Int @unique
-  balance Int 
+  balance BigInt 
   user User @relation(fields: [userId], references: [id])
 }
 
@@ -39,6 +39,7 @@ model Transactions{
   id Int @id @default(autoincrement())
   senderId Int
   receiverId Int
+  amount BigInt
   token String @unique
   transactionId String @unique
   status TransactionStatus

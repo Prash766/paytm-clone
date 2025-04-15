@@ -1,17 +1,22 @@
 {
   "name": "@repo/db",
   "version": "0.0.0",
-  "exports":{
-    "./client" : "./src/index.ts"
+  "exports": {
+    "./user_client": "./src/clientDb.ts",
+    "./bank_client": "./src/bankDbClient.ts"
   },
   "scripts": {
-    "prisma-bank-migrate":"npx prisma migrate dev --schema ./prisma-bank-db/schema.prisma",
-    "prisma-client-migrate" : "npx prisma migrate dev --schema ./prisma-client-db/schema.prisma"
+    "prisma-bank-migrate": "npx prisma migrate dev --schema ./prisma-bank-db/schema.prisma",
+    "prisma-client-migrate": "npx prisma migrate dev --schema ./prisma-client-db/schema.prisma",
+    "prisma-bank-generate": "npx prisma generate --schema ./prisma-bank-db/schema.prisma",
+    "prisma-client-generate": "npx prisma generate --schema ./prisma-client-db/schema.prisma",
+    "bank_seed": "ts-node prisma-bank-db/seed.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma-client-db/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0"
+    "@prisma/client": "^6.5.0",
+    "bcrypt": "^5.1.1"
   }
 }

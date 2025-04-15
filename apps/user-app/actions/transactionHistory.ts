@@ -2,9 +2,8 @@
 
 import { getServerSession } from "next-auth"
 import { authOptions } from "../lib/auth"
-import { prisma } from "@repo/db/client";
-import { OnRampStatus } from "@prisma/client";
-const extendedPrisma = prisma?.$extends({
+import { prismaClientDB } from "@repo/db/user-client";
+const extendedPrisma = prismaClientDB?.$extends({
     name:"transactionHistory",
     result: {
       onRampTransaction: {
