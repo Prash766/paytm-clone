@@ -1,4 +1,4 @@
-import { prisma } from '@repo/db/client'
+import { prismaClientDB } from '@repo/db/user_client'
 import bcrypt from 'bcrypt'
 import CredentialsProvider from "next-auth/providers/credentials"
 import { DefaultSession, NextAuthOptions } from "next-auth";
@@ -37,7 +37,7 @@ export const authOptions = {
                     if (!credentials?.password) {
                         return null;
                     }
-                    const user = await prisma.user.findFirst({
+                    const user = await prismaClientDB.user.findFirst({
                         where: {
                             number: credentials?.phoneNumber
                         },

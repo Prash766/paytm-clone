@@ -2,7 +2,7 @@
 
 import { getServerSession } from "next-auth"
 import { authOptions } from "../lib/auth"
-import { prismaClientDB } from "@repo/db/user-client";
+import { prismaClientDB } from "@repo/db/user_client";
 const extendedPrisma = prismaClientDB?.$extends({
     name:"transactionHistory",
     result: {
