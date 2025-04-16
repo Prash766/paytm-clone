@@ -28,7 +28,10 @@ return  data.startTime.toLocaleDateString()
       }
     })
       const plainTransactions = transactions.map(transaction =>
-      JSON.parse(JSON.stringify(transaction))
+      JSON.parse(JSON.stringify({
+        ...transaction,
+        amount:transaction.amount/100
+      }))
     )
     console.log("plain transactions",plainTransactions)
   

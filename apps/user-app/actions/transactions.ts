@@ -18,8 +18,8 @@ type TransactionData = {
 }
 
 type CreateTransactionResult =
-  | { message: string }
-  | { success: true; transaction: TransactionData }
+  | { success:false , message: string }
+  | { success: true; transaction: TransactionData[] , orderId:string }
 
 
 export async function createTransaction(params: FormValues) : Promise<CreateTransactionResult> {
@@ -27,6 +27,7 @@ export async function createTransaction(params: FormValues) : Promise<CreateTran
     try {
         if(!session?.user){
             return {
+                success:false,
                 message:"User not logged in"
             }
         }
@@ -41,12 +42,13 @@ export async function createTransaction(params: FormValues) : Promise<CreateTran
                 'Content-Type':"application/json; charset=UTF-8"
             })
         })
+        console.log("res oten",res)
         const token = await res.json()
         console.log("token" , token)
         const transaction = await prismaClientDB.onRampTransaction.create({
             data:{
                 userId:Number(session?.user.id),
-                token:token,
+                token:token.token,
                 amount:Number(amount)*100,
                  provider: bankName,
                  status:"Processing",
@@ -58,16 +60,18 @@ export async function createTransaction(params: FormValues) : Promise<CreateTran
         })
         return {
             success:true,
-            transaction:{
+            transaction:[{
                 ...transaction,
                 amount : transaction.amount/100,
                 startTime:transaction.startTime.toLocaleDateString()
-            }
+            }],
+            orderId: token.token
         }
         
     } catch (error) {
         console.log(error)
         return {
+            success:false,
             message:"Internal Server Error"
         }
         

@@ -2,28 +2,62 @@ import express, { Response, Request } from  'express'
 import {prismaClientDB} from '@repo/db/user_client' 
 import * as crypto from 'crypto'
 import {encryptedToken} from './utils/encryptSymmetric'
+import isTokenValid from './utils/helper'
 const app = express()
 app.use(express.json())
 
-const TIME_OF_EXPIRY = 10*60
+export const TIME_OF_EXPIRY = 10*60*1000
 
+export interface PaymentDetails {
+    expireTime: number;
+    secretKey: string;
+    details: {
+      amountToBePayed: number;
+      receiverAccountNumber: string;
+      receiverName: string;
+    };
+  }
+   
 
-const tokenMapWithSecretKey= new Map()
+export const tokenMapWithSecretKey= new Map<string ,PaymentDetails >()
 
 app.post('/initiateTransaction' , (req:Request , res: Response)=>{
 const {amountToBePayed , receiverAccountNumber , receiverName } = req.body
 const plainText =amountToBePayed +" "+ receiverAccountNumber +" " + receiverName
-const  key = crypto.randomUUID()
+const  key = crypto.randomBytes(16).toString("hex")
 const token = encryptedToken(key  , plainText)
+console.log("token after encruption" , token)
 tokenMapWithSecretKey.set(token , {
-    expireTime: new Date().getMilliseconds() + TIME_OF_EXPIRY
+    expireTime: new Date().getTime() + TIME_OF_EXPIRY,
+    secretKey : key,
+    details : {
+        amountToBePayed,
+        receiverAccountNumber,
+        receiverName
+    }
 })
 console.log(token)
  res.json({
-    message :"transacition initiated",
+    message :"transaction initiated",
     token
 })
 
+})
+
+app.get('/payment/', (req, res) : any=>{
+    const orderId = req.query.orderId as  string
+    console.log("order id", orderId)
+    if(!isTokenValid(orderId)){
+         return res.status(400).json({
+            success:"false",
+            message:"Invalid token or session"
+        })
+    }
+   return res.status(200).json({
+        success:true,
+        paymentDetails:tokenMapWithSecretKey.get(orderId)?.details,
+        message:"Valid Session"
+    })
 })
 
 

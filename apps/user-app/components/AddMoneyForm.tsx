@@ -23,8 +23,10 @@ const AddMoneyForm = () => {
     try {
       const res = await createTransaction(data);
       console.log("res", res);
-      dispatch(setUserTransaction(res.transaction));
-      // window.location.href = process.env.NEXT_PUBLIC_ADDING_MONEY_REDIRECT_URL!;
+      if(res.success){
+        dispatch(setUserTransaction(res.transaction));
+        window.location.href = `/payment?orderId=${res.orderId}`;
+      }
     } catch (error) {
       console.log(error);
     }
