@@ -25,7 +25,7 @@ const AddMoneyForm = () => {
       console.log("res", res);
       if(res.success){
         dispatch(setUserTransaction(res.transaction));
-        window.location.href = `/payment?orderId=${res.orderId}`;
+        window.location.href = res.paymentUrl
       }
     } catch (error) {
       console.log(error);

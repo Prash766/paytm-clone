@@ -19,7 +19,7 @@ type TransactionData = {
 
 type CreateTransactionResult =
   | { success:false , message: string }
-  | { success: true; transaction: TransactionData[] , orderId:string }
+  | { success: true; transaction: TransactionData[] , orderId:string, paymentUrl: string }
 
 
 export async function createTransaction(params: FormValues) : Promise<CreateTransactionResult> {
@@ -65,7 +65,8 @@ export async function createTransaction(params: FormValues) : Promise<CreateTran
                 amount : transaction.amount/100,
                 startTime:transaction.startTime.toLocaleDateString()
             }],
-            orderId: token.token
+            orderId: token.token,
+            paymentUrl:token.paymentUrl
         }
         
     } catch (error) {

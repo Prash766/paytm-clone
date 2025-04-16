@@ -1,10 +1,16 @@
+import 'dotenv/config'
 import express, { Response, Request } from  'express'
 import {prismaClientDB} from '@repo/db/user_client' 
 import * as crypto from 'crypto'
 import {encryptedToken} from './utils/encryptSymmetric'
 import isTokenValid from './utils/helper'
+import cors from 'cors'
 const app = express()
 app.use(express.json())
+app.use(cors({
+    origin: process.env.PAYMENT_PAGE_URL,
+    credentials:true
+}))
 
 export const TIME_OF_EXPIRY = 10*60*1000
 
@@ -39,7 +45,8 @@ tokenMapWithSecretKey.set(token , {
 console.log(token)
  res.json({
     message :"transaction initiated",
-    token
+    token,
+    paymentUrl: `http://localhost:5173/payment?orderId=${token}`
 })
 
 })
