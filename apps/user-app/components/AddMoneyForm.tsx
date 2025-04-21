@@ -34,7 +34,17 @@ const AddMoneyForm = () => {
 
         // Add a small delay before redirecting to show the loader
         setTimeout(() => {
-          window.location.href = res.paymentUrl
+          window.open(res.paymentUrl, '_blank')
+          window.addEventListener("message", (event) => {
+            if (event.origin !== "http://localhost:5173") return;
+          
+            const { status, orderId } = event.data;
+          
+            if (status === "success" && orderId === res.orderId) {
+              console.log("✅ Transaction complete!");
+            }
+          });
+          
           // window.open(res.paymentUrl, '_blank');
         }, 1000)
       } else {

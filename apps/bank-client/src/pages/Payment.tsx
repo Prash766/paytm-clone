@@ -78,8 +78,20 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
     })
     if(res.status===200){
       if(redirectUrl){
-        window.location.href = `${redirectUrl}&status=success&key=4`
+        // window.location.href = `${redirectUrl}&status=success&key=4`
+        if(window.opener){
+          console.log(window.opener)
+          window.opener.postMessage({
+            orderId : orderId?.replace(/ /g, "+"),
+            paymentStatus : "success",
+
+          } ,
+          redirectUrl
+        )
+        window.close()
+        }
       }
+      
     }
   }
 
