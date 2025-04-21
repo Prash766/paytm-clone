@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../prisma-client-db/client-db'
 import bcrypt from "bcrypt";
 const prisma = new PrismaClient()
 
@@ -20,6 +20,7 @@ async function main() {
         create: {
           startTime: new Date(),
           status: "Success",
+          signature:"fwub203923hr28h",
           amount: 20000,
           token: "token__1",
           provider: "HDFC Bank",
@@ -44,6 +45,7 @@ async function main() {
         create: {
           startTime: new Date(),
           status: "Failure",
+          signature :"iiwfnwifnif1939jinv",
           amount: 2000,
           token: "token__2",
           provider: "HDFC Bank",

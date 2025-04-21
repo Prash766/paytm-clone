@@ -1,5 +1,5 @@
 "use server";
-import {prisma} from '@repo/db/client'
+import {prismaClientDB} from '@repo/db/user_client'
 import { userSignUpSchema } from '../schemas/signup.schema';
 import { ZodError } from 'zod';
 import bcrypt from 'bcrypt'
@@ -12,7 +12,7 @@ export  async function signup(userInfo: any){
     
     const {name , password , email , number} = userInfo
     const hashedPassword = await bcrypt.hash(password , 10)
-    const user = await prisma.user.findFirst({
+    const user = await prismaClientDB.user.findFirst({
         where:{
             email : email
         }
@@ -20,7 +20,7 @@ export  async function signup(userInfo: any){
     if(!user){
         new Error("User already Exists", )
     }
-    const new_user = await prisma.user.create({
+    const new_user = await prismaClientDB.user.create({
         data : {
             name,
             password:hashedPassword,

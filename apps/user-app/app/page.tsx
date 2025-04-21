@@ -4,8 +4,13 @@ import { Separator } from "@repo/ui/ui";
 import SideBar from "../components/SideBar";
 import DashBoardTopBar from "../components/DashBoardTopBar";
 import MainContent from "../components/MainContent";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useAppDispatch } from "@repo/store/redux";
+import { setActiveSideBarItem } from "@repo/store/sidebarslice";
 
 export default function Home() {
+
   // const session = useSession()
 
   return (

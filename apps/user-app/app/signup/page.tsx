@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  useForm,
+  
 } from "@repo/ui/ui";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +16,7 @@ import { userSignUpSchema } from "../../schemas/signup.schema";
 import FormButton from "../../components/Button";
 import { signup } from "../../actions/signUpAction";
 import { signIn } from "next-auth/react";
+import { useForm } from "react-hook-form";
 
 export default function SignUp() {
   const form = useForm<z.infer<typeof userSignUpSchema>>({

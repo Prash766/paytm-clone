@@ -1,30 +1,88 @@
-import { useEffect } from "react"
-import { Link, useSearchParams } from "react-router-dom"
-import { checkOrderIdAndGetPaymentDetails } from "../utils/helper"
+import { useEffect, useState , useRef} from "react";
+import { Link, redirect, useNavigate, useSearchParams } from "react-router-dom";
+import { checkOrderIdAndGetPaymentDetails } from "../utils/helper";
+import NotFound from "./NotFound";
+import axiosClient from "../axiosClient";
 
-export default function Payment() {
-  const [searchParams] = useSearchParams()
+export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
+  const navigate = useNavigate();
 
-  // Prefilled values as requested
-  const paymentDetails = {
-    amount: "$1,250.00",
-    receiverBank: "Chase Bank",
-    accountNumber: "XXXX-XXXX-4567",
-    receiverName: "John Smith",
-    transactionId: "TXN78912345",
-    date: "April 16, 2025",
-  }
+  const [searchParams] = useSearchParams();
+  const [paymentDetails, setPaymentDetails] = useState<{
+    amountToBePayed: string;
+    receiverAccountNumber: number;
+    receiverName: string;
+    transactionID: string
+  } | null>(null);
+  const [sessionExpired , setSessionExpired] = useState<boolean>(false)
+  const [isFetching , setIsFetching] = useState(false)
+  const orderId = searchParams.get("orderId");
+  console.log("order id", orderId);
+  const redirectUrl = searchParams.get("redirect");
+
 
   useEffect(() => {
-    const orderId = searchParams.get("orderId") 
-    if (orderId) {
-      async function checkValidOrderId() {
-        const res = await checkOrderIdAndGetPaymentDetails(orderId!) 
-        console.log(res)
-      }
-      checkValidOrderId() 
+    if (!isLoggedIn) {
+      // Save the complete payment URL to redirect back after login
+      navigate('/login', {
+        state: {
+          redirect: `/payment?orderId=${orderId}&redirect=${redirectUrl}`
+        },
+        replace: true
+      });
+      return;
     }
-  }, [searchParams]) 
+  }, [isLoggedIn, orderId, redirectUrl]);
+
+
+  useEffect(() => {
+    console.log("use effect runs");
+    if (!orderId) {
+      setSessionExpired(true)
+      return
+    }
+    async function checkValidOrderId() {
+      try {
+        setIsFetching(true)
+        const res = await checkOrderIdAndGetPaymentDetails(orderId!);
+        setIsFetching(false)
+        console.log(res);
+        setPaymentDetails(res.data.paymentDetails);
+      } catch (error) {
+        setIsFetching(false)
+        setSessionExpired(true)
+      }
+    }
+    if(isLoggedIn){
+      checkValidOrderId();
+    }
+    return ()=>{
+      setIsFetching(false)
+      setSessionExpired(false)
+    }
+  }, []);
+  
+  if(isFetching){
+    return 
+  }
+  if(sessionExpired && !isFetching){
+    return <NotFound/>
+  }
+
+  const handleClick = async()=>{
+    const res = await axiosClient.post('/pay',{
+      token :orderId?.replace(/ /g, "+"),
+       transactionId :paymentDetails?.transactionID,
+       amountToBePayed : paymentDetails?.amountToBePayed,
+       attemptStatus:"success"
+    })
+    if(res.status===200){
+      if(redirectUrl){
+        window.location.href = `${redirectUrl}&status=success&key=4`
+      }
+    }
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -33,7 +91,10 @@ export default function Payment() {
           <Link to="/" className="text-2xl font-bold">
             SecureBank
           </Link>
-          <Link to="/" className="px-4 py-2 bg-green-700 rounded-md hover:bg-green-800 transition">
+          <Link
+            to="/"
+            className="px-4 py-2 bg-green-700 rounded-md hover:bg-green-800 transition"
+          >
             Logout
           </Link>
         </div>
@@ -41,48 +102,56 @@ export default function Payment() {
 
       <main className="container mx-auto py-12 px-4">
         <div className="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Payment Details</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+            Payment Details
+          </h2>
 
           <div className="space-y-6">
             <div className="bg-green-50 p-4 rounded-md border border-green-200">
-              <h3 className="text-lg font-medium text-green-800 mb-2">Transaction Summary</h3>
-              <p className="text-green-700">Please review the payment details before proceeding.</p>
+              <h3 className="text-lg font-medium text-green-800 mb-2">
+                Transaction Summary
+              </h3>
+              <p className="text-green-700">
+                Please review the payment details before proceeding.
+              </p>
             </div>
 
             <div className="space-y-4">
               <div className="flex justify-between py-2 border-b border-gray-200">
                 <span className="text-gray-600">Amount</span>
-                <span className="font-medium text-gray-900">{paymentDetails.amount}</span>
-              </div>
-
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="text-gray-600">Receiver Bank</span>
-                <span className="font-medium text-gray-900">{paymentDetails.receiverBank}</span>
-              </div>
-
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="text-gray-600">Account Number</span>
-                <span className="font-medium text-gray-900">{paymentDetails.accountNumber}</span>
-              </div>
-
-              <div className="flex justify-between py-2 border-b border-gray-200">
-                <span className="text-gray-600">Receiver Name</span>
-                <span className="font-medium text-gray-900">{paymentDetails.receiverName}</span>
+                <span className="font-medium text-gray-900">
+                  ₹{paymentDetails?.amountToBePayed}
+                </span>
               </div>
 
               <div className="flex justify-between py-2 border-b border-gray-200">
                 <span className="text-gray-600">Transaction ID</span>
-                <span className="font-medium text-gray-900">{paymentDetails.transactionId}</span>
+                <span className="font-medium text-gray-900">{paymentDetails?.transactionID}</span>
               </div>
 
               <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-600">Receiver Name</span>
+                <span className="font-medium text-gray-900">
+                  {paymentDetails?.receiverName}
+                </span>
+              </div>
+
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-600">Account Number</span>
+                <span className="font-medium text-gray-900">
+                  {paymentDetails?.receiverAccountNumber}
+                </span>
+              </div>
+
+              {/* <div className="flex justify-between py-2 border-b border-gray-200">
                 <span className="text-gray-600">Date</span>
                 <span className="font-medium text-gray-900">{paymentDetails.date}</span>
-              </div>
+              </div> */}
             </div>
 
             <div className="pt-4">
               <button
+              onClick={handleClick}
                 type="button"
                 className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition text-lg font-medium"
               >
@@ -91,7 +160,10 @@ export default function Payment() {
             </div>
 
             <div className="text-center text-sm text-gray-500">
-              <p>By clicking "Pay", you agree to our Terms of Service and Privacy Policy.</p>
+              <p>
+                By clicking "Pay", you agree to our Terms of Service and Privacy
+                Policy.
+              </p>
             </div>
           </div>
         </div>
@@ -99,9 +171,12 @@ export default function Payment() {
 
       <footer className="bg-gray-800 text-white py-6">
         <div className="container mx-auto text-center">
-          <p>© 2024 SecureBank. This is a fake banking application for demonstration purposes only.</p>
+          <p>
+            © 2024 SecureBank. This is a fake banking application for
+            demonstration purposes only.
+          </p>
         </div>
       </footer>
     </div>
-  )
+  );
 }
