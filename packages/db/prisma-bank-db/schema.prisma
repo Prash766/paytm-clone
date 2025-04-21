@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client-js"
   output = "../prisma-bank-db/bank-db"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -31,7 +32,7 @@ model Account {
   accountNumber BigInt @unique
   securityKey String
   userId Int @unique
-  balance BigInt 
+  balance BigInt @default(200000)
   user User @relation(fields: [userId], references: [id])
 }
 

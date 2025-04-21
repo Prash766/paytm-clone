@@ -7,10 +7,12 @@
 generator client {
   provider = "prisma-client-js"
   output = "../prisma-client-db/client-db"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
   provider = "postgresql"
+  // url      = env("PG_CLIENT_DB_URL")
   url      = "postgresql://neondb_owner:npg_rzExysLDq76j@ep-steep-dust-a5ftvmab-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
   directUrl =  env("PG_CLIENT_DIRECT_URL")
 }
@@ -45,6 +47,7 @@ model OnRampTransaction {
   status    OnRampStatus
   token     String       @unique
   provider  String
+  signature String @unique 
   amount    Int
   startTime DateTime
   userId    Int     @unique
