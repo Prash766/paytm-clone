@@ -1,9 +1,11 @@
 import express from "express";
 import { prismaClientDB } from "@repo/db/user_client";
 const app = express();
+app.use(express.json())
 
-app.post("/hdfcWebhook", async (req, res) => {
-  const { token, user_id, amount } = req.body;
+app.post("/bankWebHook", async (req, res) => {
+  console.log("hit from the bank")
+  const { token, user_id, amount, status , successCode } = req.body;
   const paymentDetails = {
     token: token,
     userId: user_id,

@@ -28,12 +28,23 @@ import { SIDEBAR_ITEMS, SIDEBAR_ITEMS_TYPE } from "../helper/constants"
 import SideBarItems from "./SideBarItems"
 import { SearchIcon } from "lucide-react"
 import { Separator } from "@repo/ui/ui"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { useAppDispatch } from "@repo/store/redux"
+import { setActiveSideBarItem } from "@repo/store/sidebarslice"
 
 const SideBar = ({ className }: { className?: string }) => {
   const session = useSession()
   const [isFocused , setIsFocused] = useState(false)
   const [activeSidebarItem  , setActiveSidebarItem] = useState<number>(1)
+  const searchParams = useSearchParams()
+  const dispatch = useAppDispatch()
+  useEffect(()=>{
+    if(searchParams?.get('sig')){
+      console.log("hi there", searchParams.get('key'))
+      dispatch(setActiveSideBarItem(SIDEBAR_ITEMS[Number(searchParams.get('key'))-1]))
+    }
+  },[])
 
   const handleClick = (item: SIDEBAR_ITEMS_TYPE) => {
     if (activeSidebarItem !== item.key) {
