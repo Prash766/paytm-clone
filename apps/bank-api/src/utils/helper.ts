@@ -14,6 +14,7 @@ export default function isTokenValid(token: string): boolean {
     }
     const expiryTime = paymentDetails.expireTime;
     const currentTime = new Date().getTime();
+    console.log("current time",currentTime)
     if( expiryTime <currentTime) {
         tokenMapWithSecretKey.delete(token)
         return false

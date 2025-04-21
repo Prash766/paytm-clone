@@ -86,10 +86,7 @@ app.post("/initiateTransaction", (req: Request, res: Response) => {
   });
 });
 
-app.get(
-  "/payment/",
-  verifyJWT,
-  asyncHandler(async (req, res) => {
+app.get("/payment/",verifyJWT,  asyncHandler(async (req, res) => {
     const encodedOrderId = req.query.orderId as string;
     const safeEncodedOrderId = encodedOrderId.replace(/ /g, "+");
 
@@ -117,16 +114,22 @@ app.get(
       },
     });
     console.log("RECEVIER DETAILS", receiverDetails);
-    const transaction = await prismaBank.transactions.create({
-      data: {
-        amount: BigInt(paymentDetails?.amountToBePayed!),
-        token: orderId,
-        status: "Processing",
-        transactionId: generateTransactionId(),
-        receiverId: receiverDetails?.user.id!,
-        senderId: req.user?.userId!,
-      },
+    let transaction = await prismaBank.transactions.findUnique({
+      where: { token: orderId },
     });
+    
+    if (!transaction) {
+      transaction = await prismaBank.transactions.create({
+        data: {
+          amount:        BigInt(paymentDetails!.amountToBePayed!),
+          token:         orderId,
+          status:        "Processing",
+          transactionId: generateTransactionId(),
+          receiverId:    receiverDetails!.user.id,
+          senderId:      req.user!.userId,
+        },
+      });
+    }
 
     return res.status(200).json({
       success: true,

@@ -21,6 +21,7 @@ const AddMoneyForm = () => {
   } = useForm<FormValues>()
   const dispatch = useAppDispatch()
   const [isTransactionProcessing, setIsTransactionProcessing] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState<"processing"| "failure" | "success" |  null>(null)
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -31,19 +32,36 @@ const AddMoneyForm = () => {
       if (res.success) {
         dispatch(setUserTransaction(res.transaction))
         console.log("payment url", res.paymentUrl)
-
+        setPaymentStatus("processing")
         // Add a small delay before redirecting to show the loader
         setTimeout(() => {
           window.open(res.paymentUrl, '_blank')
           window.addEventListener("message", (event) => {
+            console.log("event from the windwo",event)
             if (event.origin !== "http://localhost:5173") return;
           
-            const { status, orderId } = event.data;
+            const { paymentStatus, orderId } = event.data;
           
-            if (status === "success" && orderId === res.orderId) {
+            if (paymentStatus === "success" && orderId === res.orderId) {
+              setPaymentStatus("success")
+              setTimeout(()=>{
+                setIsTransactionProcessing(false)
+                setPaymentStatus(null)
+
+              }, 5000)
               console.log("✅ Transaction complete!");
             }
-          });
+            if (paymentStatus === "failure" && orderId === res.orderId) {
+              setPaymentStatus("failure")
+              setTimeout(()=>{
+                setIsTransactionProcessing(false)
+                setPaymentStatus(null)
+
+              }, 5000)
+
+
+            }
+            });
           
           // window.open(res.paymentUrl, '_blank');
         }, 1000)
@@ -133,8 +151,9 @@ const AddMoneyForm = () => {
         </CardContent>
       </Card>
 
-      {/* Transaction Loader */}
-      <TransactionLoader isOpen={isTransactionProcessing} />
+     {
+      paymentStatus ? <TransactionLoader paymentStatus={paymentStatus} isOpen={isTransactionProcessing} /> : null
+     } 
     </>
   )
 }
