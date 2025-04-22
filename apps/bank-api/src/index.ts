@@ -34,7 +34,7 @@ declare  global {
 }
 
 // export const TIME_OF_EXPIRY = 60 * 60 * 1000;
-export const TIME_OF_EXPIRY = 20 * 1000;
+export const TIME_OF_EXPIRY = 1*60 * 1000;
 export const WEBHOOK_ATTEMPTS=5
 export const PENDING_TXS :Array<{orderId : string, expireTime : any, txn_id:string}>= []
 export const SWEEPER_TIME = 60*1000
@@ -319,6 +319,45 @@ app.post( "/pay",verifyJWT,  asyncHandler(async (req, res) => {
     }
   })
 );
+
+app.post('/updateTransactionStatus' , asyncHandler(async(req , res)=>{
+  const {txnId , token , status } = req.body
+ try {
+   const transaction  = await prismaBank.transactions.findFirst({
+     where:{
+       transactionId : txnId,
+       token : token
+     }
+   })
+   if(!transaction){
+     return res.status(400).json({
+       success:"false",
+       message:"Invalid Token or Transaction ID"
+ 
+     })
+   }
+   const  updatedTransaction = await prismaBank.transactions.update({
+     where:{
+       id :transaction.id
+     },
+     data:{
+       status:status
+     }
+   })
+   return res.status(200).json({
+     success:true,
+     message:"Transaction Status Updated",
+     updatedTransaction
+   })
+ } catch (error) {
+  console.log(error)
+  return res.status(500).json({
+    success: "false",
+    message:"Internal Server Error"
+  })
+  
+ }
+}))
 
 function startSweeper(){
   if (globalThis.__sweeperStarted) return;

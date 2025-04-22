@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link,  useNavigate, useSearchParams } from "react-router-dom";
 import { checkOrderIdAndGetPaymentDetails } from "../utils/helper";
 import NotFound from "./NotFound";
@@ -17,6 +17,7 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
   const [sessionExpired, setSessionExpired] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState(true)
   const [isPaymentInitiated, setIsPaymentInitiated] = useState(false);
+  const paymentSuccessRef = useRef<boolean>(false)
   const orderId = searchParams.get("orderId");
   console.log("order id", orderId);
   const redirectUrl = searchParams.get("redirect");
@@ -35,17 +36,21 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
 
   useEffect(() => {
     function onUnload() {
-      if (window.opener && redirectUrl) {
+      console.log("this is openend , unload")
+      if (window.opener && redirectUrl && !paymentSuccessRef.current) {
+        const origin = new URL(redirectUrl).origin
+
         console.log("hi there eee")
         window.opener.postMessage(
           { orderId: orderId?.replace(/ /g, "+"), paymentStatus: "failure" },
+          origin
         );
       }
     }
 
     window.addEventListener("beforeunload", onUnload);
     return () => window.removeEventListener("beforeunload", onUnload);
-  }, [orderId, redirectUrl]);
+  }, [paymentSuccessRef.current]);
   
   useEffect(() => {
     console.log("use effect runs");
@@ -90,13 +95,15 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
       });
       
       if(res.status === 200) {
-        setIsPaymentInitiated(false);
+        console.log(window.opener)
+        paymentSuccessRef.current= true
         if(redirectUrl && window.opener) {
+          const origin = new URL(redirectUrl).origin
           console.log("Sending success message to opener");
           window.opener.postMessage({
             orderId: orderId?.replace(/ /g, "+"),
             paymentStatus: "success",
-          }, 
+          }, origin
           );
           window.close();
         }

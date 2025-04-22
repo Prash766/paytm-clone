@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@repo/ui/ui";
 import { CheckCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -15,6 +16,8 @@ export const TransactionLoader = ({
   paymentStatus,
 }: TransactionLoaderProps) => {
   const [progress, setProgress] = useState(0);
+  const  [openCancelPaymentConfirmation , setOpenCancelPaymentConfirmation] = useState(false)
+  const [timeExpired , setTimeExpired] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -27,7 +30,7 @@ export const TransactionLoader = ({
           }
           return newProgress;
         });
-      }, 150);
+      }, 3000);
 
       return () => clearInterval(interval);
     } else {
@@ -36,6 +39,10 @@ export const TransactionLoader = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleClick= ()=>{
+    setOpenCancelPaymentConfirmation(true)
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -105,6 +112,9 @@ export const TransactionLoader = ({
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Do not close this window or refresh the page
           </p>
+          <Button onClick={handleClick} variant="outline"  className="text-white bg-violet-500 cursor-pointer">
+            Cancel Transaction
+          </Button >
         </div>
       </div>
     </div>
