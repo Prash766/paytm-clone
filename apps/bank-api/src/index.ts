@@ -16,6 +16,8 @@ import bcrypt from "bcrypt";
 import { prismaBank } from "@repo/db/bank_client";
 import verifyJWT from "./middlewares/auth.middleware";
 import { webHookCallback } from "./utils/webHook";
+import retryWebHook from "./utils/retryWebhook";
+import expiredTransactionSweeper from "./utils/sweeper";
 const app = express();
 app.use(express.json());
 app.use(
@@ -26,9 +28,17 @@ app.use(
 );
 app.use(cookieParser());
 
-export const TIME_OF_EXPIRY = 60 * 60 * 1000;
+declare  global {
+  var __sweeperStarted: boolean
+
+}
+
+// export const TIME_OF_EXPIRY = 60 * 60 * 1000;
+export const TIME_OF_EXPIRY = 20 * 1000;
 export const WEBHOOK_ATTEMPTS=5
-const RETRY_INTERVAL_MS = 60 * 1000; 
+export const PENDING_TXS :Array<{orderId : string, expireTime : any, txn_id:string}>= []
+export const SWEEPER_TIME = 60*1000
+export const RETRY_INTERVAL_MS = 60 * 1000; 
 
 
 export interface PaymentDetails {
@@ -50,7 +60,7 @@ export const tokenOptions = {
   sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
 } satisfies CookieOptions;
 
-app.post("/initiateTransaction", (req: Request, res: Response) => {
+app.post("/initiateTransaction", async(req: Request, res: Response) => {
   const {
     amountToBePayed,
     receiverAccountNumber,
@@ -67,6 +77,12 @@ app.post("/initiateTransaction", (req: Request, res: Response) => {
   console.log("token after encruption", token);
   console.log("webhook url",webHookUrl)
   console.log("inside ht inititate teansction api",token)
+  const transactionId = generateTransactionId()
+  PENDING_TXS.push({
+    orderId : token,
+    txn_id:  transactionId,
+    expireTime : new Date().getTime() + TIME_OF_EXPIRY
+  })
   tokenMapWithSecretKey.set(token, {
     expireTime: new Date().getTime() + TIME_OF_EXPIRY,
     secretKey: key,
@@ -77,6 +93,31 @@ app.post("/initiateTransaction", (req: Request, res: Response) => {
     },
     webHookUrl,
   });
+  const receiverDetails = await prismaBank.account.findFirst({
+    relationLoadStrategy: "join",
+    where: {
+      accountNumber: BigInt(receiverAccountNumber!),
+    },
+    include: {
+      user: {
+        omit: {
+          password: true,
+        },
+      },
+    },
+  });
+
+  const transaction = await prismaBank.transactions.create({
+    data:{
+      amount:        BigInt(amountToBePayed!),
+      token:         token,
+      status:        "Processing",
+      transactionId: transactionId,
+      receiverId:    receiverDetails!.user.id,      
+    }
+
+  })
+  console.log("transaction created",transaction)
   console.log(tokenMapWithSecretKey.get(token))
   console.log(token);
   res.json({
@@ -118,16 +159,15 @@ app.get("/payment/",verifyJWT,  asyncHandler(async (req, res) => {
       where: { token: orderId },
     });
     
-    if (!transaction) {
-      transaction = await prismaBank.transactions.create({
-        data: {
-          amount:        BigInt(paymentDetails!.amountToBePayed!),
-          token:         orderId,
-          status:        "Processing",
-          transactionId: generateTransactionId(),
-          receiverId:    receiverDetails!.user.id,
-          senderId:      req.user!.userId,
+    if (!transaction?.senderId) {
+      transaction = await prismaBank.transactions.update({
+        where:{
+          token : orderId
         },
+        data: {
+          senderId: req.user!.userId,
+        },
+        
       });
     }
 
@@ -258,21 +298,10 @@ app.post( "/pay",verifyJWT,  asyncHandler(async (req, res) => {
   
       const details = tokenMapWithSecretKey.get(token)
       console.log("details",details)
-      const callback = await webHookCallback(details! , token, amountToBePayed, req.user?.userId!)
+      const callback = await webHookCallback(details! , token, amountToBePayed, req.user?.userId!,"Success")
       let attempts = 1;
       if (!callback.ok) {
-        const timer = setInterval(async () => {
-          attempts++;
-          const retry = await webHookCallback(details!, token, amountToBePayed, req.user?.userId!);
-      
-          if (retry.ok) {
-            console.log(`Webhook succeeded on attempt #${attempts}`);
-            clearInterval(timer);
-          } else if (attempts >= WEBHOOK_ATTEMPTS) {
-            console.warn(`Webhook failed after ${WEBHOOK_ATTEMPTS} attempts.`);
-            clearInterval(timer);
-          }
-        }, RETRY_INTERVAL_MS);
+       retryWebHook(details! , token , amountToBePayed , req.user?.userId! , attempts, "Success")
       }
       
       console.log(transaction);
@@ -290,6 +319,17 @@ app.post( "/pay",verifyJWT,  asyncHandler(async (req, res) => {
     }
   })
 );
+
+function startSweeper(){
+  if (globalThis.__sweeperStarted) return;
+  globalThis.__sweeperStarted = true;
+  setInterval(()=>{
+    console.log("its running ")
+    expiredTransactionSweeper().catch((error)=> console.log("error in the expired transcation",error))
+  }, 5000)
+}
+
+startSweeper()
 
 app.listen(4003, () => {
   console.log("server");

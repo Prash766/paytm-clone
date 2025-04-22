@@ -28,7 +28,7 @@ app.post("/bankWebHook", async (req, res) => {
           token: paymentDetails.token,
         },
         data: {
-          status: "Success",
+          status: status==="Success" ? "Success" : "Failure",
         },
       }),
     ]);
