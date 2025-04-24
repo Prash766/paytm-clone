@@ -120,8 +120,15 @@ app.post("/initiateTransaction", async(req: Request, res: Response) => {
   console.log("transaction created",transaction)
   console.log(tokenMapWithSecretKey.get(token))
   console.log(token);
+  const parsedTransaction =  JSON.parse(
+    JSON.stringify(transaction, (key, value) =>
+      typeof value === "bigint" ? value.toString() : value
+    )
+  );
+
   res.json({
     message: "transaction initiated",
+    transaction : parsedTransaction,
     token,
     paymentUrl: `http://localhost:5173/payment?orderId=${encodedToken}&redirect=${redirectURL}`,
   });
@@ -336,6 +343,9 @@ app.post('/updateTransactionStatus' , asyncHandler(async(req , res)=>{
  
      })
    }
+   if(transaction.status!=="Processing"){
+    return res.status(409).json({ error: 'Cannot cancel a non-processing tx' });
+  }
    const  updatedTransaction = await prismaBank.transactions.update({
      where:{
        id :transaction.id
