@@ -2,7 +2,8 @@ import { UserTransactionType } from "@repo/store/user-transaction";
 import { Badge } from "@repo/ui/ui";
 import { Clock4, Loader, UploadCloud, XCircle } from "lucide-react";
 import { TransactionProp } from "./TransactionHistory";
-
+//
+//added polling when transaction loader is mounted , and 
 const NewTransaction = ({
   status = "Processing",
   startTime,

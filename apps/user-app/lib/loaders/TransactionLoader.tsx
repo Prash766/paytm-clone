@@ -2,11 +2,17 @@
 
 import { Button } from "@repo/ui/ui";
 import { CheckCircleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { TransactionStatus } from "../../../../packages/db/prisma-bank-db/bank-db";
+import { useAppDispatch, useAppSelector } from "@repo/store/redux";
+import { RootState } from "@repo/store/store";
+import { pollingTransactionStatus } from "../../actions/transactionStatus";
+import { updateTransactionStatus } from "../../actions/transactions";
+import { setUserTransaction } from "@repo/store/user-transaction";
 
 interface TransactionLoaderProps {
   isOpen: boolean;
-  onClose?: () => void;
+  onClose: () => void;
   paymentStatus: "success" | "failure" | "processing";
 }
 
@@ -16,8 +22,35 @@ export const TransactionLoader = ({
   paymentStatus,
 }: TransactionLoaderProps) => {
   const [progress, setProgress] = useState(0);
-  const  [openCancelPaymentConfirmation , setOpenCancelPaymentConfirmation] = useState(false)
-  const [timeExpired , setTimeExpired] = useState(false)
+  const [openCancelPaymentConfirmation, setOpenCancelPaymentConfirmation] =
+    useState(false);
+  const dispatch = useAppDispatch();
+  const cancelPaymentStatus = useRef<boolean | null>(null);
+  const { currentTransactionDetails } = useAppSelector(
+    (state: RootState) => state.transactionMonitorReducer
+  );
+  const [timeExpired, setTimeExpired] = useState(false);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    pollingIntervalRef.current = setInterval(async () => {
+      const res = await pollingTransactionStatus(currentTransactionDetails.token , currentTransactionDetails.transactionId) 
+      console.log("Polling", res);
+      if (res.success === "true") {
+        if (
+          res.transactionStatus.status !== "Processing" &&
+          pollingIntervalRef.current
+        ) {
+          clearInterval(pollingIntervalRef.current);
+          onClose()
+          return;
+        }
+      }
+    }, 10000);
+    return () => {
+      if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,11 +71,42 @@ export const TransactionLoader = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    window.addEventListener("beforeunload", () => {
+      if (!cancelPaymentStatus.current) {
+        const result = window.confirm("Do You want to cancel the transaction");
+        if (result) {
+          updateTransactionStatus({
+            txnId: currentTransactionDetails.transactionId,
+            status: "Failure",
+            token: currentTransactionDetails.token,
+          }).then((res) => {
+            console.log("after canceling the transaction", res);
+          });
+        }
+      }
+    });
+  }, []);
+
   if (!isOpen) return null;
 
-  const handleClick= ()=>{
-    setOpenCancelPaymentConfirmation(true)
-  }
+  const handleClick = async () => {
+    const res = await updateTransactionStatus({
+      txnId: currentTransactionDetails.transactionId,
+      status: "Failure",
+      token: currentTransactionDetails.token,
+    });
+    if (res.success === true) {
+      setOpenCancelPaymentConfirmation(true);
+      cancelPaymentStatus.current = true;
+      console.log("After cancelling the transaction",res)
+      dispatch(setUserTransaction(res.transaction));
+      if(pollingIntervalRef.current){
+        clearInterval(pollingIntervalRef.current)
+      }
+      onClose()
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -69,7 +133,11 @@ export const TransactionLoader = ({
                   />
                 </svg>
               ) : paymentStatus === "success" ? (
-                <CheckCircleIcon size={50} fill="green" className="text-green-600" />
+                <CheckCircleIcon
+                  size={50}
+                  fill="green"
+                  className="text-green-600"
+                />
               ) : (
                 <svg
                   className="w-8 h-8 text-red-600"
@@ -90,14 +158,18 @@ export const TransactionLoader = ({
 
           <div className="text-center">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                {
-                    paymentStatus==="processing" ? "Processing Your Transaction" : paymentStatus==="success" ? "Your Transaction was successfull" : "Payment Failed"
-                }
+              {paymentStatus === "processing"
+                ? "Processing Your Transaction"
+                : paymentStatus === "success"
+                  ? "Your Transaction was successfull"
+                  : "Payment Failed"}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {
-                    paymentStatus==="processing" ? "Processing Your Transaction" : paymentStatus==="success" ? "Amount added successfully to wallet" : "If amount debited will be refunded in 2-7 days..."
-                }
+              {paymentStatus === "processing"
+                ? "Processing Your Transaction"
+                : paymentStatus === "success"
+                  ? "Amount added successfully to wallet"
+                  : "If amount debited will be refunded in 2-7 days..."}
             </p>
           </div>
 
@@ -112,9 +184,13 @@ export const TransactionLoader = ({
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Do not close this window or refresh the page
           </p>
-          <Button onClick={handleClick} variant="outline"  className="text-white bg-violet-500 cursor-pointer">
+          <Button
+            onClick={handleClick}
+            variant="outline"
+            className="text-white bg-violet-500 cursor-pointer"
+          >
             Cancel Transaction
-          </Button >
+          </Button>
         </div>
       </div>
     </div>

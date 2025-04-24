@@ -7,6 +7,7 @@ import { useAppDispatch } from "@repo/store/redux"
 import { setUserTransaction } from "@repo/store/user-transaction"
 import { useState } from "react"
 import { TransactionLoader } from "../lib/loaders/TransactionLoader"
+import { setTransactionDetails } from "@repo/store/transaction-loader"
 
 export type FormValues = {
   amount: string
@@ -30,7 +31,14 @@ const AddMoneyForm = () => {
 
       console.log("res", res)
       if (res.success) {
+        const currentTransactionDetails = {
+          amountToBePayed : res.transaction[0]?.amount,
+          transactionId : res.transactionId,
+          paymentStatus : res.transaction[0]?.status,
+          token:res.orderId
+        }
         dispatch(setUserTransaction(res.transaction))
+        dispatch(setTransactionDetails(currentTransactionDetails))
         console.log("payment url", res.paymentUrl)
         setPaymentStatus("processing")
         // Add a small delay before redirecting to show the loader
@@ -46,7 +54,8 @@ const AddMoneyForm = () => {
               setPaymentStatus("success")
               setTimeout(()=>{
                 setIsTransactionProcessing(false)
-                setPaymentStatus(null)
+                setPaymentStatus("failure")
+                // setPaymentStatus(null)
 
               }, 5000)
               console.log("✅ Transaction complete!");
@@ -152,7 +161,7 @@ const AddMoneyForm = () => {
       </Card>
 
      {
-      paymentStatus ? <TransactionLoader paymentStatus={paymentStatus} isOpen={isTransactionProcessing} /> : null
+      paymentStatus ? <TransactionLoader onClose={()=> setPaymentStatus(null)} paymentStatus={paymentStatus} isOpen={isTransactionProcessing} /> : null
      } 
     </>
   )

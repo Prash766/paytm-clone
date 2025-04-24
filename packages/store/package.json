@@ -8,7 +8,8 @@
     "./redux": "./index.ts",
     "./store":"./store.ts",
     "./sidebarslice":"./features/sidebarItemSlice.ts",
-    "./user-transaction":"./features/userTransactionSlice.ts"
+    "./user-transaction":"./features/userTransactionSlice.ts",
+    "./transaction-loader" : "./features/transactionMonitorSlice.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",

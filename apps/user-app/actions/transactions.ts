@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../lib/auth"
 import { FormValues } from "../components/AddMoneyForm"
 import crypto from 'crypto'
+import { UserTransactionType } from "@repo/store/user-transaction"
 type TransactionData = {
     id: number;
     userId: number;
@@ -20,7 +21,7 @@ type TransactionData = {
 
 type CreateTransactionResult =
   | { success:false , message: string }
-  | { success: true; transaction: TransactionData[] , orderId:string, paymentUrl: string }
+  | { success: true; transaction: TransactionData[] , orderId:string, paymentUrl: string , transactionId: string }
 
 
 export async function createTransaction(params: FormValues) : Promise<CreateTransactionResult> {
@@ -66,6 +67,7 @@ export async function createTransaction(params: FormValues) : Promise<CreateTran
         })
         return {
             success:true,
+            transactionId:  token.transaction.transactionId,
             transaction:[{
                 ...transaction,
                 amount : transaction.amount/100,
@@ -84,4 +86,43 @@ export async function createTransaction(params: FormValues) : Promise<CreateTran
         
     }
     
+}
+
+export async function updateTransactionStatus(transactionDetails : {txnId: string , token : string , status:|"Failure"}) : Promise<{
+    success:true,
+    transaction : UserTransactionType,
+    message : string
+} | {success:false , message :string}>{
+
+    const res = await fetch("http://localhost:4003/updateTransactionStatus" , {
+        method:"POST",
+        body:JSON.stringify(transactionDetails),
+        headers: new Headers({
+            "Content-type" :"application/json"
+        })
+    })
+    const data =await res.json()
+    if(data.success!=="false"){
+        return {
+            success:false,
+            message:"Bank Server Down !"
+        }
+        
+    }
+    const transaction = await prismaClientDB.onRampTransaction.update({
+        where:{
+            token:transactionDetails.token
+        },
+        data:{
+            status :"Failure"
+        }
+    })
+    const parsedTransaction = {...transaction ,startTime : transaction.startTime.toISOString() }
+    console.log("transaction details after updating status" , transaction)
+    return {
+        success: true,
+        transaction : parsedTransaction,
+        message:"Transaction Status Updated"
+    }
+
 }

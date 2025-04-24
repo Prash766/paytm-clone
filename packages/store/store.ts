@@ -2,13 +2,15 @@ import {configureStore} from '@reduxjs/toolkit'
 import userSliceReducer from './features/userSlice'
 import sideBarItemReducer from './features/sidebarItemSlice'
 import userTransactionsReducer from './features/userTransactionSlice'
+import transactionMonitorReducer from './features/transactionMonitorSlice'
 
 export const makeStore = ()=>{
     return configureStore({
         reducer:{
             userSliceReducer,
             sideBarItemReducer,
-            userTransactionsReducer
+            userTransactionsReducer,
+            transactionMonitorReducer
         },
         
     })
