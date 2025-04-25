@@ -5,12 +5,15 @@ import NewTransaction from "./NewTransaction";
 import { useAppSelector } from "@repo/store/redux";
 import { RootState } from "@repo/store/store";
 import { UserTransactionType } from "@repo/store/user-transaction";
+import { useFormStatus } from "react-dom";
 
 
 export type TransactionProp= Omit<UserTransactionType , "status"> & {status :"Processing" | "Success" | "Failure"}
 const TransactionHistory = () => {
   const  {transaction} = useAppSelector((state:RootState)=>state.userTransactionsReducer)
+  const {pending} = useFormStatus()
   console.log("transaction",transaction)
+  console.log("pending state",pending)
   return (
     <Card className="border-gray-300">
       <CardHeader>

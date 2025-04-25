@@ -2,7 +2,6 @@
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@repo/ui/ui";
 import BalanceAmount from "../BalanceAmount";
 import AddMoneyForm from "../AddMoneyForm";
-import TransactionHistoryPage from "../TransactionHistoryPage";
 import TransactionHistory from "../TransactionHistory";
 
 const TransferOnRamping = () => {

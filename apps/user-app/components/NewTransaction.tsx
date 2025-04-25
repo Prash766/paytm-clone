@@ -52,7 +52,7 @@ const NewTransaction = ({
     <div className="flex items-center justify-between p-4 border-2 border-gray-300 mt-4 rounded-lg">
       <div className="flex items-center gap-3">
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100">
-          <currentStatus.Icon color="green" className="w-6 h-6" />
+          <currentStatus.Icon color={`${status==="Success"? "green" : status==="Failure"?"red":"yellow" }`} className="w-6 h-6" />
         </div>
         <div>
           <p className="font-medium">{currentStatus.paymentStatusText}</p>
@@ -61,7 +61,7 @@ const NewTransaction = ({
       </div>
 
       <div className="flex flex-col items-end gap-1">
-        <p className={`font-semibold text-green-600`}>+ {amount}</p>
+        <p className={`font-semibold ${status==='Success'?"text-green-600" : status==="Failure"? "text-red-500" : "text-blue-500" } `}>{status==="Success" ? "+" :  "-"} {amount}</p>
         {currentStatus.statusBadge}
       </div>
     </div>

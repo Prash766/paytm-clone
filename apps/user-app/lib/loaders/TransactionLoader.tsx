@@ -307,8 +307,9 @@ export const TransactionLoader = ({
           setServerPaymentStatus(res.transactionStatus.status);
           const formattedTransaction = {
             ...res.transactionStatus,
+            startTime : new Date(res.transactionStatus.startTime).toLocaleDateString(),
             amount: res.transactionStatus.amount / 100 // Convert amount if needed
-          };
+          };  
           dispatch(setUserTransaction(formattedTransaction));
                 if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -382,7 +383,7 @@ export const TransactionLoader = ({
       setOpenCancelPaymentConfirmation(true);
       cancelPaymentStatus.current = true;
       console.log("After cancelling the transaction",res)
-      dispatch(setUserTransaction({...res.transaction , startTime : res.transaction.startTime.toString(),amount : res.transaction.amount/100}));
+      dispatch(setUserTransaction({...res.transaction , startTime : new Date(res.transaction.startTime).toLocaleDateString ,amount : res.transaction.amount/100}));
       setServerPaymentStatus(res.transaction.status)
       if(pollingIntervalRef.current){
         clearInterval(pollingIntervalRef.current)
@@ -404,7 +405,22 @@ export const TransactionLoader = ({
       return <AlertTriangle size={40} color="yellow" />;
     } 
     else if (paymentStatus === "payment_window_closed") {
-      return <CircleAlert fill="red" size={40} />;
+      // return <CircleAlert fill="red" size={40} />;
+      return (
+        <svg
+        className="w-8 h-8 text-violet-600"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      )
     }
     else {
       return (
