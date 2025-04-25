@@ -1,19 +1,16 @@
 "use server"
-
-import { prismaBank } from "@repo/db/bank_client"
+import { prismaClientDB } from "@repo/db/user_client"
 //need to fix with better types
 export const pollingTransactionStatus : any= async(token :string, transactionId:string)=>{
     try {
-        const status  = await prismaBank.transactions.findFirst({
+        const status  = await prismaClientDB?.onRampTransaction.findFirst({
             where:{
-                token ,
-                transactionId
-            }
+                token             }
         })
         if(!status){
             return {
                 success:false,
-                message:"Invalid Transaction ID"
+                message:"Invalid Token"
             }
         }
         return {

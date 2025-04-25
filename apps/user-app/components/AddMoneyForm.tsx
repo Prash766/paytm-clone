@@ -8,6 +8,7 @@ import { setUserTransaction } from "@repo/store/user-transaction"
 import { useState } from "react"
 import { TransactionLoader } from "../lib/loaders/TransactionLoader"
 import { setTransactionDetails } from "@repo/store/transaction-loader"
+import { Loader } from "lucide-react"
 
 export type FormValues = {
   amount: string
@@ -22,15 +23,18 @@ const AddMoneyForm = () => {
   } = useForm<FormValues>()
   const dispatch = useAppDispatch()
   const [isTransactionProcessing, setIsTransactionProcessing] = useState(false)
-  const [paymentStatus, setPaymentStatus] = useState<"processing"| "failure" | "success" |  null>(null)
+  const [paymentStatus, setPaymentStatus] = useState<"processing"| "failure" | "success" |  null| "payment_window_closed">(null)
 
   const onSubmit = async (data: FormValues) => {
     try {
       setIsTransactionProcessing(true)
+      setPaymentStatus("processing")
+
       const res = await createTransaction(data)
 
       console.log("res", res)
       if (res.success) {
+        console.log("add money form res order id",res.orderId)
         const currentTransactionDetails = {
           amountToBePayed : res.transaction[0]?.amount,
           transactionId : res.transactionId,
@@ -40,39 +44,43 @@ const AddMoneyForm = () => {
         dispatch(setUserTransaction(res.transaction))
         dispatch(setTransactionDetails(currentTransactionDetails))
         console.log("payment url", res.paymentUrl)
-        setPaymentStatus("processing")
         // Add a small delay before redirecting to show the loader
-        setTimeout(() => {
-          window.open(res.paymentUrl, '_blank')
+        setTimeout(() => {  
           window.addEventListener("message", (event) => {
             console.log("event from the windwo",event)
             if (event.origin !== "http://localhost:5173") return;
           
             const { paymentStatus, orderId } = event.data;
-          
-            if (paymentStatus === "success" && orderId === res.orderId) {
-              setPaymentStatus("success")
+            
+            if(paymentStatus==="payment_window_closed" && orderId===res.orderId){
               setTimeout(()=>{
-                setIsTransactionProcessing(false)
-                setPaymentStatus("failure")
-                // setPaymentStatus(null)
-
-              }, 5000)
-              console.log("✅ Transaction complete!");
-            }
-            if (paymentStatus === "failure" && orderId === res.orderId) {
-              setPaymentStatus("failure")
-              setTimeout(()=>{
-                setIsTransactionProcessing(false)
-                setPaymentStatus(null)
-
-              }, 5000)
-
+                setPaymentStatus("payment_window_closed")  
+              },2000)
 
             }
-            });
+            // if (paymentStatus === "success" && orderId === res.orderId) {
+            //   setPaymentStatus("success")
+            //   setTimeout(()=>{
+            //     setIsTransactionProcessing(false)
+            //     setPaymentStatus("failure")
+            //     // setPaymentStatus(null)
+
+            //   }, 5000)
+            //   console.log("✅ Transaction complete!");
+            // }
+            // if (paymentStatus === "failure" && orderId === res.orderId) {
+            //   setPaymentStatus("failure")
+            //   setTimeout(()=>{
+            //     setIsTransactionProcessing(false)
+            //     setPaymentStatus(null)
+
+            //   }, 5000)
+            // }
+
+            })
           
           // window.open(res.paymentUrl, '_blank');
+          window.open(res.paymentUrl, '_blank')
         }, 1000)
       } else {
         setIsTransactionProcessing(false)
@@ -147,7 +155,9 @@ const AddMoneyForm = () => {
                 <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Add Money
+                {
+                  isTransactionProcessing ? <><Loader size={10} className="animate-spin w-5 h-5"/> Processing </>  : "Add Money"
+                }
               </button>
             </div>
 
@@ -161,7 +171,7 @@ const AddMoneyForm = () => {
       </Card>
 
      {
-      paymentStatus ? <TransactionLoader onClose={()=> setPaymentStatus(null)} paymentStatus={paymentStatus} isOpen={isTransactionProcessing} /> : null
+      isTransactionProcessing ? <TransactionLoader onClose={()=> setIsTransactionProcessing(false)} paymentStatus={paymentStatus} isOpen={isTransactionProcessing} /> : null
      } 
     </>
   )

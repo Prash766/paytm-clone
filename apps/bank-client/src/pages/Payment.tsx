@@ -39,10 +39,14 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
       console.log("this is openend , unload")
       if (window.opener && redirectUrl && !paymentSuccessRef.current) {
         const origin = new URL(redirectUrl).origin
-
+        console.log("origin", origin)
+        console.log("redirect url", redirectUrl)
         console.log("hi there eee")
         window.opener.postMessage(
-          { orderId: orderId?.replace(/ /g, "+"), paymentStatus: "failure" },
+          { orderId: orderId?.replace(/ /g, "+"), 
+            // paymentStatus: "failure" 
+            paymentStatus: "payment_window_closed" 
+          },
           origin
         );
       }
@@ -102,7 +106,8 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
           console.log("Sending success message to opener");
           window.opener.postMessage({
             orderId: orderId?.replace(/ /g, "+"),
-            paymentStatus: "success",
+            // paymentStatus: "success",
+            paymentStatus: "payment_window_closed",
           }, origin
           );
           window.close();
@@ -114,7 +119,8 @@ export default function Payment({isLoggedIn}:{isLoggedIn:boolean}) {
       if(window.opener && redirectUrl) {
         window.opener.postMessage({
           orderId: orderId?.replace(/ /g, "+"),
-          paymentStatus: "failure",
+          // paymentStatus: "failure",
+          paymentStatus: "payment_window_closed",
         }, 
         );
       }

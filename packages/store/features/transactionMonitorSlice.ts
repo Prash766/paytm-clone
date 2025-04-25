@@ -10,8 +10,8 @@ export type TransactionLoader = {
     isFetching: boolean
     expiryTimer : null | number,
     currentTransactionDetails: {
-        token :string,
-        transactionId:string,
+        token :string | null,
+        transactionId:string | null,
         amountToBePayed:  number | null,
         paymentStatus : "Success" | "Failure" | "Processing" | null
     }
@@ -21,8 +21,8 @@ const initialState:TransactionLoader= {
     isFetching : false,
     expiryTimer : null,
     currentTransactionDetails :{
-        token: "",
-        transactionId :"",
+        token: null,
+        transactionId :null,
         amountToBePayed : null,
         paymentStatus: null
 
