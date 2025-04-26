@@ -39,7 +39,7 @@ export const SIDEBAR_ITEMS : SIDEBAR_ITEMS_TYPE[]= [
     { name: "Accounts", icon: ICONS_SVG.grid, key:2},
     { name: "Cards", icon: ICONS_SVG.credit_card, key:3},
     { name: "Transfer", icon: ICONS_SVG.repeat, key:4},
-    { name: "Transaction", icon: ICONS_SVG.dollar_sign, key:5 },
+    { name: "P2PTransfer", icon: ICONS_SVG.dollar_sign, key:5 },
     { name: "Spend Groups", icon: ICONS_SVG.layers, key:6 },
     { name: "Payees", icon: ICONS_SVG.users, key:7 },
   ]

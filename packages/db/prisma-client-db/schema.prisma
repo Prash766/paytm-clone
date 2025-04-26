@@ -25,6 +25,9 @@ model User {
   password    String
   Balance Balance[]
   OnRampTransaction OnRampTransaction[]
+  SenderP2PTransaction P2PTransaction[] @relation("SenderP2PTransaction")
+  ReceiverP2PTransaction P2PTransaction[] @relation("ReceiverP2PTransaction")
+  
 }
 
 model Merchant {
@@ -37,8 +40,8 @@ model Merchant {
 model Balance{
   id Int @id @default(autoincrement())
   userId  Int @unique
-  amount Int
-  locked Int
+  amount Int @default(0)
+  locked Int?
   user User @relation(fields: [userId], references: [id])
 }
 
@@ -52,7 +55,16 @@ model OnRampTransaction {
   startTime DateTime
   userId    Int    
   user      User         @relation(fields: [userId], references: [id])
+}
 
+model P2PTransaction{
+  id Int @id @default(autoincrement())
+  senderId Int
+  receiverId Int
+  amount Int
+  message String?
+  sender User @relation("SenderP2PTransaction",fields: [senderId] , references: [id])
+  receiver User @relation("ReceiverP2PTransaction",fields: [receiverId] , references: [id])
 }
 
 
@@ -66,4 +78,5 @@ enum OnRampStatus {
   Failure
   Processing
 }
+
 
