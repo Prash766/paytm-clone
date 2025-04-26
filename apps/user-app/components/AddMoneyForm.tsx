@@ -18,6 +18,7 @@ export type FormValues = {
 const AddMoneyForm = () => {
   const {
     register,
+    resetField,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>()
@@ -171,7 +172,7 @@ const AddMoneyForm = () => {
       </Card>
 
      {
-      isTransactionProcessing ? <TransactionLoader onClose={()=> setIsTransactionProcessing(false)} paymentStatus={paymentStatus} isOpen={isTransactionProcessing} /> : null
+      isTransactionProcessing ? <TransactionLoader onClose={()=> setIsTransactionProcessing(false)} paymentStatus={paymentStatus} isOpen={isTransactionProcessing} resetField = {()=>resetField}/> : null
      } 
     </>
   )

@@ -1,15 +1,12 @@
-"use client";
 import { Separator } from "@repo/ui/ui";
 // import { useSession } from "next-auth/react";
 import SideBar from "../components/SideBar";
 import DashBoardTopBar from "../components/DashBoardTopBar";
 import MainContent from "../components/MainContent";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import { useAppDispatch } from "@repo/store/redux";
-import { setActiveSideBarItem } from "@repo/store/sidebarslice";
 
 export default function Home() {
+//TODO : INSERT A LOADER ON THE TRANSACTION HISTORY currently initalizing the value when the store is etup 
+//come up with better solution
 
   // const session = useSession()
 
@@ -28,7 +25,7 @@ export default function Home() {
                 className="bg-gray-300 my-5"
                 orientation="horizontal"
               />
-              <MainContent/>
+                <MainContent/>
             </div>
           </div>
         </div>

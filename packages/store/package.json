@@ -9,7 +9,8 @@
     "./store":"./store.ts",
     "./sidebarslice":"./features/sidebarItemSlice.ts",
     "./user-transaction":"./features/userTransactionSlice.ts",
-    "./transaction-loader" : "./features/transactionMonitorSlice.ts"
+    "./transaction-loader" : "./features/transactionMonitorSlice.ts",
+    "./user-balance" : "./features/userBalance.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",

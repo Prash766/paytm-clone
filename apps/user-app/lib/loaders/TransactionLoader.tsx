@@ -272,17 +272,20 @@ import { RootState } from "@repo/store/store";
 import { pollingTransactionStatus } from "../../actions/transactionStatus";
 import { updateTransactionStatus } from "../../actions/transactions";
 import { setUserTransaction } from "@repo/store/user-transaction";
+import { setCurrentBalanceState, setLockedBalance, setUnLockedBalance } from "@repo/store/user-balance";
 
 interface TransactionLoaderProps {
   isOpen: boolean;
   onClose: () => void;
   paymentStatus: "success" | "failure" | "processing" | "payment_window_closed" | null;
+  resetField : ()=> void
 }
 
 export const TransactionLoader = ({
   isOpen,
   onClose,
   paymentStatus,
+  resetField
 }: TransactionLoaderProps) => {
   const [progress, setProgress] = useState(0);
   const [openCancelPaymentConfirmation, setOpenCancelPaymentConfirmation] =
@@ -311,11 +314,16 @@ export const TransactionLoader = ({
             amount: res.transactionStatus.amount / 100 // Convert amount if needed
           };  
           dispatch(setUserTransaction(formattedTransaction));
+          if(res.transactionStatus.status==="Success"){
+            dispatch(setUnLockedBalance(res.transactionStatus.amount/100))
+          }
                 if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
             // Allow time to show the status before closing
             setTimeout(() => {
+              resetField()
               onClose();
+              
             }, 3000);
           }
           return;
@@ -383,7 +391,7 @@ export const TransactionLoader = ({
       setOpenCancelPaymentConfirmation(true);
       cancelPaymentStatus.current = true;
       console.log("After cancelling the transaction",res)
-      dispatch(setUserTransaction({...res.transaction , startTime : new Date(res.transaction.startTime).toLocaleDateString ,amount : res.transaction.amount/100}));
+      dispatch(setUserTransaction({...res.transaction , startTime : new Date(res.transaction.startTime).toLocaleDateString() ,amount : res.transaction.amount/100}));
       setServerPaymentStatus(res.transaction.status)
       if(pollingIntervalRef.current){
         clearInterval(pollingIntervalRef.current)
@@ -392,6 +400,7 @@ export const TransactionLoader = ({
       // Show status for a moment before closing
       setTimeout(() => {
         onClose();
+        resetField()
         setIsCancelTransaction(false)
       }, 3000);
     }
@@ -476,7 +485,7 @@ export const TransactionLoader = ({
               className={`absolute inset-0 border-4 border-violet-200 
                 ${serverPaymentStatus === "Success" ? "border-green-500 bg-green-100" : 
                   serverPaymentStatus === "Failure" ? "border-yellow-500 bg-yellow-100" : 
-                  paymentStatus === "payment_window_closed" ? "bg-yellow-400" : 
+                  paymentStatus === "payment_window_closed" ? "bg-blue-400" : 
                   "border-t-violet-600 animate-spin"} 
                 rounded-full`}
             ></div>
@@ -486,7 +495,7 @@ export const TransactionLoader = ({
               className={`absolute inset-4 
                 ${serverPaymentStatus === "Success" ? "bg-green-100" : 
                   serverPaymentStatus === "Failure" ? "bg-yellow-100" : 
-                  paymentStatus === "payment_window_closed" ? "bg-yellow-100" : 
+                  paymentStatus === "payment_window_closed" ? "bg-blue-100" : 
                   "bg-violet-100 animate-pulse"} 
                 rounded-full flex items-center justify-center`}
             >

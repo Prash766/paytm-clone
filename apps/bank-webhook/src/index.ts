@@ -6,16 +6,24 @@ app.use(express.json())
 app.post("/bankWebHook", async (req, res) => {
   console.log("hit from the bank")
   const { token, user_id, amount, status , successCode } = req.body;
+  console.log("amount",amount)
   const paymentDetails = {
     token: token,
     userId: user_id,
     amount,
   };
+  const data = await prismaClientDB.onRampTransaction.findFirst({
+    where:{
+      token:token
+    }
+  })
+  console.log("paytm user id" , data?.userId)
+  console.log("user id",Number(paymentDetails.userId),)
   try {
     const payment = await prismaClientDB.$transaction([
       prismaClientDB.balance.updateMany({
         where: {
-          userId: Number(paymentDetails.userId),
+          userId: data?.userId,
         },
         data: {
           amount: {

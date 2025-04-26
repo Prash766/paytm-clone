@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import { prisma } from "@repo/db/client";
+import {prismaClientDB} from '@repo/db/user_client'
 
 export default async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { number, password, email, name } = body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.findFirst({
+    const user = await prismaClientDB.user.findFirst({
       where: {
         email: email,
       },
@@ -18,7 +18,7 @@ export default async function POST(req: NextRequest) {
       });
     }
 
-    const newUser = await prisma.user.create({
+    const newUser = await prismaClientDB.user.create({
       data: {
         email,
         password: hashedPassword,
@@ -26,6 +26,11 @@ export default async function POST(req: NextRequest) {
         number,
       },
     });
+    const newAccount = await prismaClientDB.balance.create({
+      data:{
+        userId:newUser.id,
+      }
+    })
     return NextResponse.json({
       message: "User Signed Up successfully",
       user: newUser,

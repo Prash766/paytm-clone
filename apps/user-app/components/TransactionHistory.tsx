@@ -12,8 +12,6 @@ export type TransactionProp= Omit<UserTransactionType , "status"> & {status :"Pr
 const TransactionHistory = () => {
   const  {transaction} = useAppSelector((state:RootState)=>state.userTransactionsReducer)
   const {pending} = useFormStatus()
-  console.log("transaction",transaction)
-  console.log("pending state",pending)
   return (
     <Card className="border-gray-300">
       <CardHeader>

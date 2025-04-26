@@ -3,6 +3,7 @@ import userSliceReducer from './features/userSlice'
 import sideBarItemReducer from './features/sidebarItemSlice'
 import userTransactionsReducer from './features/userTransactionSlice'
 import transactionMonitorReducer from './features/transactionMonitorSlice'
+import userBalanceReducer from './features/userBalance'
 
 export const makeStore = ()=>{
     return configureStore({
@@ -10,7 +11,8 @@ export const makeStore = ()=>{
             userSliceReducer,
             sideBarItemReducer,
             userTransactionsReducer,
-            transactionMonitorReducer
+            transactionMonitorReducer,
+            userBalanceReducer
         },
         
     })

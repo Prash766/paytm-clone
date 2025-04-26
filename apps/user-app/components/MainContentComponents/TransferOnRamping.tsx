@@ -1,10 +1,28 @@
-
+"use client";
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@repo/ui/ui";
 import BalanceAmount from "../BalanceAmount";
 import AddMoneyForm from "../AddMoneyForm";
 import TransactionHistory from "../TransactionHistory";
+import useSWR from "swr";
+import { fetcher } from "../../helper/apiClient";
+import { useAppDispatch, useAppSelector } from "@repo/store/redux";
+import { setCurrentBalanceState } from "@repo/store/user-balance";
+import { RootState } from "@repo/store/store";
+import { useEffect } from "react";
 
 const TransferOnRamping = () => {
+  const { data, isLoading } = useSWR("/api/v1/user-balance", fetcher);
+  const dispatch = useAppDispatch()
+  const {currentBalanceState} = useAppSelector((state:RootState)=> state.userBalanceReducer)
+    const unlockedBalance = data?.unlockedBalance || 0;
+  const lockedBalance = data?.lockedBalance || 0
+  const totalBalance = unlockedBalance + lockedBalance
+  useEffect(()=>{
+    if(!isLoading && data){
+      dispatch(setCurrentBalanceState({lockedBalance , unlockedBalance}))
+    }
+  }, [isLoading])
+  
   return (
     <div className="flex flex-col h-full p-4 space-y-8 ">
       <div className="-mt-4">
@@ -23,7 +41,13 @@ const TransferOnRamping = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">₹24,500.00</div>
+              {isLoading ? (
+                <div className="w-32 h-12 animate-pulse bg-gradient-to-br from-violet-400 to-purple-600"></div>
+              ) : (
+                <div className="text-3xl font-bold">
+                  ₹{currentBalanceState.lockedBalance!+currentBalanceState.unlockedBalance!}.00
+                </div>
+              )}
               <div className="flex items-center mt-4 text-sm">
                 <Badge
                   variant="outline"
@@ -37,15 +61,22 @@ const TransferOnRamping = () => {
           </Card>
 
           <div className="grid grid-cols-2 gap-4">
-            <BalanceAmount amount="18,750" balanceType="unlocked" />
-            <BalanceAmount amount="5,750" balanceType="locked" />
+            <BalanceAmount
+              isLoading={isLoading}
+              amount={currentBalanceState.unlockedBalance?.toString()!}
+              balanceType="unlocked"
+            />
+            <BalanceAmount
+              isLoading={isLoading}
+              amount={currentBalanceState.lockedBalance?.toString()!}
+              balanceType="locked"
+            />
           </div>
         </div>
         <AddMoneyForm />
       </div>
-      <div className="grid grid-cols-1">
-      </div>
-        <TransactionHistory/>
+      <div className="grid grid-cols-1"></div>
+      <TransactionHistory />
     </div>
   );
 };
