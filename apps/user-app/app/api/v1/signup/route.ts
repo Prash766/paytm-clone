@@ -29,6 +29,7 @@ export default async function POST(req: NextRequest) {
     const newAccount = await prismaClientDB.balance.create({
       data:{
         userId:newUser.id,
+        
       }
     })
     return NextResponse.json({

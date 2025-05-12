@@ -28,8 +28,8 @@ export  async  function GET (req:NextRequest) :Promise<any>{
     console.log("locked" ,lockedBalance)
     return NextResponse.json({
         message:"Reached",
-        unlockedBalance:unlockedBalance?.amount,
-        lockedBalance:lockedBalance._sum.amount,
+        unlockedBalance:unlockedBalance?.amount!/100,
+        lockedBalance:lockedBalance._sum.amount!/100,
         session
     })
 }
