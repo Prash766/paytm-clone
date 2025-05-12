@@ -1,8 +1,7 @@
 import { prismaClientDB } from '@repo/db/user_client'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import CredentialsProvider from "next-auth/providers/credentials"
 import { DefaultSession, NextAuthOptions } from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 
 declare module "next-auth" {
