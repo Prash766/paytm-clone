@@ -41,7 +41,7 @@ model Balance{
   id Int @id @default(autoincrement())
   userId  Int @unique
   amount Int @default(0)
-  locked Int?
+  locked LockState @default(Unlocked)
   user User @relation(fields: [userId], references: [id])
 }
 
@@ -63,6 +63,7 @@ model P2PTransaction{
   receiverId Int
   amount Int
   message String?
+  createdAt DateTime @default(now())
   sender User @relation("SenderP2PTransaction",fields: [senderId] , references: [id])
   receiver User @relation("ReceiverP2PTransaction",fields: [receiverId] , references: [id])
 }
@@ -78,5 +79,12 @@ enum OnRampStatus {
   Failure
   Processing
 }
+
+enum LockState {
+  Unlocked  // maps to 0
+  Locked    // maps to 1
+}
+
+
 
 
