@@ -4,6 +4,7 @@ import sideBarItemReducer from './features/sidebarItemSlice'
 import userTransactionsReducer from './features/userTransactionSlice'
 import transactionMonitorReducer from './features/transactionMonitorSlice'
 import userBalanceReducer from './features/userBalance'
+import P2PTransactionHistoryReducer from './features/p2pTransactionHistory'
 
 export const makeStore = ()=>{
     return configureStore({
@@ -12,7 +13,8 @@ export const makeStore = ()=>{
             sideBarItemReducer,
             userTransactionsReducer,
             transactionMonitorReducer,
-            userBalanceReducer
+            userBalanceReducer,
+            P2PTransactionHistoryReducer
         },
         
     })

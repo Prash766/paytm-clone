@@ -10,7 +10,8 @@
     "./sidebarslice":"./features/sidebarItemSlice.ts",
     "./user-transaction":"./features/userTransactionSlice.ts",
     "./transaction-loader" : "./features/transactionMonitorSlice.ts",
-    "./user-balance" : "./features/userBalance.ts"
+    "./user-balance" : "./features/userBalance.ts",
+    "./p2ptransaction" : "./features/p2pTransactionHistory.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",

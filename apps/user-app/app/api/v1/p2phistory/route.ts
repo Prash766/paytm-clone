@@ -84,7 +84,6 @@
 
 // }
 
-
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../../lib/auth";
@@ -95,17 +94,26 @@ export async function GET(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, msg: "Not authenticated" }, { status: 401 });
   }
+  
+  const searchParams = req.nextUrl.searchParams;
+  const params: Record<string, string> = {};
+  searchParams.forEach((value: string, key: string) => params[key] = value);
+  
   const me = Number(session.user.id);
+  const cursorParam = params.cursor ? Number(params.cursor) : undefined;
+  const limit = 10;
 
   try {
-    const raw = await prismaClientDB.p2PTransaction.findMany({
+    // Create the base query options
+    const queryOptions = {
       where: {
         OR: [
           { senderId: me },
           { receiverId: me },
         ],
       },
-      orderBy: { createdAt: "desc" },
+      take: limit,
+      orderBy: { createdAt: "desc" as const },
       include: {
         sender: {
           select: { name: true }
@@ -114,27 +122,74 @@ export async function GET(req: NextRequest) {
           select: { name: true }
         }
       }
-    });
+    };
 
-    const transactions = raw.map((tx) => {
-      const isSender = tx.senderId === me;
-      return {
-        id: tx.id,
-        amount: tx.amount,
-        createdAt: tx.createdAt,
-        senderName: tx.sender.name,
-        receiverName: tx.receiver.name,
-        otherName: isSender ? tx.receiver.name : tx.sender.name,
-        direction: isSender ? "sent" : "received",
-        senderId: tx.senderId,
-        receiverId: tx.receiverId
-      };
-    });
+    // Add cursor if it exists
+    if (cursorParam) {
+      // For cursor-based pagination with Prisma, create a separate query
+      const findManyResult = await prismaClientDB.p2PTransaction.findMany({
+        ...queryOptions,
+        cursor: { id: cursorParam },
+        skip: 1, // Skip the cursor item
+      });
+      
+      // Get the last transaction for pagination
+      const lastTransaction = findManyResult[findManyResult.length - 1];
+      const nextCursor = lastTransaction?.id;
+      
+      // Format the transactions
+      const transactions = findManyResult.map((tx) => {
+        const isSender = tx.senderId === me;
+        return {
+          id: tx.id,
+          amount: tx.amount,
+          createdAt: tx.createdAt,
+          senderName: tx.sender.name,
+          receiverName: tx.receiver.name,
+          otherName: isSender ? tx.receiver.name : tx.sender.name,
+          direction: isSender ? "sent" : "received",
+          senderId: tx.senderId,
+          receiverId: tx.receiverId
+        };
+      });
 
-    return NextResponse.json({ 
-      success: true, 
-      transactions, 
-    });
+      return NextResponse.json({ 
+        success: true, 
+        transactions, 
+        nextCursor,
+        hasMore: findManyResult.length === limit
+      });
+    } else {
+      // Initial query without cursor
+      const findManyResult = await prismaClientDB.p2PTransaction.findMany(queryOptions);
+      
+      // Get the last transaction for pagination
+      const lastTransaction = findManyResult[findManyResult.length - 1];
+      const nextCursor = lastTransaction?.id;
+      
+      // Format the transactions
+      const transactions = findManyResult.map((tx) => {
+        const isSender = tx.senderId === me;
+        return {
+          id: tx.id,
+          amount: tx.amount,
+          createdAt: tx.createdAt,
+          senderName: tx.sender.name,
+          receiverName: tx.receiver.name,
+          otherName: isSender ? tx.receiver.name : tx.sender.name,
+          direction: isSender ? "sent" : "received",
+          senderId: tx.senderId,
+          receiverId: tx.receiverId
+        };
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        transactions, 
+        nextCursor,
+        hasMore: findManyResult.length === limit
+      });
+    }
   } catch (error) {
     console.error("Error fetching transactions:", error);
     return NextResponse.json({ 
